@@ -16,7 +16,7 @@ $cfg['Servers'][$i]['socket'] = '';
 $cfg['Servers'][$i]['auth_type'] = 'cookie';
 $cfg['Servers'][$i]['user'] = '';
 $cfg['Servers'][$i]['password'] = '';
-$cfg['Servers'][$i]['AllowNoPassword'] = true;
+$cfg['Servers'][$i]['AllowNoPassword'] = false; // require password for connections
 
 // phpMyAdmin configuration storage settings
 $cfg['Servers'][$i]['pmadb'] = '';
@@ -24,7 +24,7 @@ $cfg['Servers'][$i]['controluser'] = '';
 $cfg['Servers'][$i]['controlpass'] = '';
 
 // Other settings
-$cfg['blowfish_secret'] = 'basic_php_mysql_codespaces_secret_key_123456789';
+$cfg['blowfish_secret'] = getenv('PMA_BLOWFISH_SECRET') ?: ''; // load from environment to avoid committing secrets
 $cfg['DefaultLang'] = 'en';
 $cfg['ServerDefault'] = 1;
 $cfg['UploadDir'] = '';
@@ -38,7 +38,7 @@ $cfg['ShowDbStructureLastUpdate'] = true;
 $cfg['ShowDbStructureLastCheck'] = true;
 
 // Allow access from any domain (important for Codespaces)
-$cfg['CheckConfigurationPermissions'] = false;
+$cfg['CheckConfigurationPermissions'] = true; // enforce file permission checks for security
 $cfg['TrustedProxies'] = [];
 
 // Handle reverse proxy headers (Codespaces routing)
