@@ -1,4 +1,4 @@
-<?php require_once __DIR__ . '/Includes/database.php'; ?>
+<?php ob_start(); require_once __DIR__ . '/Includes/database.php'; ?>
 
 <?php
 
@@ -6,11 +6,13 @@ $add_error = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_visitor'])) {
     $full_name = $conn->real_escape_string(trim($_POST['full_name'] ?? ''));
 
-    // sanitize contact number: keep digits only and validate
+    // sanitize contact number: keep digits only and validate (must be exactly 11 digits)
     $contact_number_raw = $_POST['contact_number'] ?? '';
     $contact_number_digits = preg_replace('/\D+/', '', $contact_number_raw);
     if ($contact_number_digits === '') {
         $add_error = 'Contact number must contain digits only.';
+    } elseif (strlen($contact_number_digits) !== 11) {
+        $add_error = $add_error ?: 'Contact number must be exactly 11 digits.';
     }
     $contact_number = $conn->real_escape_string($contact_number_digits);
 
@@ -34,9 +36,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_visitor'])) {
     $number_of_visitors = intval($_POST['number_of_visitors'] ?? 0);
 
     if ($add_error === '') {
+        // Let the database assign the numeric auto-increment `visitor_id`.
+        $number_of_visitors_esc = $conn->real_escape_string((string)$number_of_visitors);
+
         $sql = "INSERT INTO visitor (full_name, contact_number, valid_id, number_of_visitors) 
-                VALUES ('$full_name', '$contact_number', '$valid_id', $number_of_visitors)";
+                VALUES ('$full_name', '$contact_number', '$valid_id', '$number_of_visitors_esc')";
         if ($conn->query($sql) === TRUE) {
+            // optionally get the new numeric ID: $new_id = $conn->insert_id;
             header('Location: visitor.php?added=1');
             exit;
         } else {
@@ -48,7 +54,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_visitor'])) {
 // Handle delete action early so we can redirect before HTML is sent
 if (isset($_GET['delete'])) {
     $id = intval($_GET['delete']);
-    $conn->query("DELETE FROM visitor WHERE visitor_id = $id");
+    if ($id > 0) {
+        $conn->query("DELETE FROM visitor WHERE visitor_id = $id");
+    }
     header('Location: visitor.php?deleted=1');
     exit;
 }
@@ -73,8 +81,8 @@ if (isset($_GET['delete'])) {
         <label for="full_name">Full Name</label>
         <input type="text" name="full_name" id="full_name" placeholder="Please Input Full Name" required>
 
-               <label for="contact_number">Contact Number</label>
-        <input type="text" name="contact_number" id="contact_number" placeholder="Please Input Contact Number" inputmode="numeric" pattern="\d+" required>
+            <label for="contact_number">Contact Number</label>
+            <input type="text" name="contact_number" id="contact_number" placeholder="Please Input Contact Number" inputmode="numeric" pattern="\d{11}" maxlength="11" minlength="11" title="Enter exactly 11 digits" required>
 
         <label for="valid_id">Type of ID</label>
         <select name="valid_id" id="valid_id" required>
@@ -128,8 +136,11 @@ if (isset($_GET['delete'])) {
     document.addEventListener('DOMContentLoaded', function(){
         var cn = document.getElementById('contact_number');
         if (cn) {
-            // remove non-digits on input (handles typing and paste)
-            cn.addEventListener('input', function(){ this.value = this.value.replace(/\D/g,''); });
+
+            // remove non-digits on input (handles typing and paste) and limit to 11 digits
+            cn.addEventListener('input', function(){
+                this.value = this.value.replace(/\D/g,'').slice(0,11);
+            });
 
             // optionally block most non-numeric key presses while allowing navigation/editing
             cn.addEventListener('keydown', function(e){

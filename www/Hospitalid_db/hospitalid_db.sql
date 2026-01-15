@@ -29,7 +29,7 @@ SET time_zone = "+00:00";
 
 CREATE TABLE `patient_visit` (
   `patient_visit_id` int(11) NOT NULL,
-  `valid_id` varchar(40) DEFAULT NULL,
+  `valid_id` int(11) DEFAULT NULL,
   `visit_id` varchar(40) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -40,9 +40,9 @@ CREATE TABLE `patient_visit` (
 --
 
 CREATE TABLE `visitor` (
-  `visitor_id` varchar(40) NOT NULL,
+  `visitor_id` int(11) NOT NULL AUTO_INCREMENT,
   `full_name` varchar(40) DEFAULT NULL,
-  `contact_number` int(11) DEFAULT NULL,
+  `contact_number` varchar(40) DEFAULT NULL,
   `valid_id` varchar(40) NOT NULL,
   `number_of_visitors` varchar(40) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -55,7 +55,7 @@ CREATE TABLE `visitor` (
 
 CREATE TABLE `visit_log` (
   `visit_log_id` varchar(40) NOT NULL,
-  `valid_id` varchar(40) NOT NULL,
+  `valid_id` int(11) NOT NULL,
   `check_in_time` varchar(40) DEFAULT NULL,
   `check_out_time` varchar(40) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;

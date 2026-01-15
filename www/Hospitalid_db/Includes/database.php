@@ -62,7 +62,6 @@
 
     // finally select the database for normal use
     if (!mysqli_select_db($conn, $database_name)) {
-        die('Could not select database ' . $database_name . ' - ' . mysqli_error($conn));
+        throw new RuntimeException('Could not select database ' . $database_name . ' - ' . mysqli_error($conn));
     }
-    ?>
 
