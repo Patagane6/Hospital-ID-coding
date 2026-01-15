@@ -1,12 +1,6 @@
 <?php
-// Resolve database include reliably and fail with a clear error if missing
-$dbFile = __DIR__ . DIRECTORY_SEPARATOR . 'Includes' . DIRECTORY_SEPARATOR . 'database.php';
-if (!file_exists($dbFile)) {
-    error_log('Missing database include: ' . $dbFile);
-    http_response_code(500);
-    die('Server configuration error: database connection file not found.');
-}
-require_once $dbFile;
+// include database connection using a reliable, case-sensitive path
+require_once __DIR__ . '/Includes/database.php';
 ?>
 
 <?php
