@@ -1,9 +1,9 @@
 <?php
     // Use 127.0.0.1 to force TCP (avoids socket "No such file or directory" errors)
-    $servername = "mysql";
+    $servername = "localhost";
     $username = "root";
-    $password = "root";
-    $database_name = "hospitalid_db";
+    $password = "";
+    $database_name = "g12.it1_patagane-gelaga-pelegrino";
     $port = 3306;
 
     // enable mysqli exceptions for clearer errors during development

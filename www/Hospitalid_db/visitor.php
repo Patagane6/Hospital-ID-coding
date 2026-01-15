@@ -3,7 +3,7 @@
 <?php
 
 $add_error = '';
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_visitor'])) {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_visitor']) && $conn) {
     $full_name = $conn->real_escape_string(trim($_POST['full_name'] ?? ''));
 
     // sanitize contact number: keep digits only and validate (must be exactly 11 digits)
@@ -52,7 +52,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_visitor'])) {
 }
 
 // Handle delete action early so we can redirect before HTML is sent
-if (isset($_GET['delete'])) {
+if (isset($_GET['delete']) && $conn) {
     $id = intval($_GET['delete']);
     if ($id > 0) {
         $conn->query("DELETE FROM visitor WHERE visitor_id = $id");
@@ -66,55 +66,87 @@ if (isset($_GET['delete'])) {
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Visitors</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Visitors - Hospital Visitor System</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
 <header>
-    Visitor Records
+    <div class="header-content">
+        <h1>🏥 Hospital Visitor System</h1>
+        <nav class="header-nav">
+            <a href="index.php" class="nav-link">Dashboard</a>
+            <a href="visitor.php" class="nav-link active">Visitors</a>
+        </nav>
+    </div>
 </header>
 
 <div class="container">
-    <h2>Add Visitor</h2>
-    <form method="POST" action="">
-        <label for="full_name">Full Name</label>
-        <input type="text" name="full_name" id="full_name" placeholder="Please Input Full Name" required>
+    <div class="page-header">
+        <h2>👥 Visitor Management</h2>
+        <p>Register and manage hospital visitors</p>
+    </div>
 
-            <label for="contact_number">Contact Number</label>
-            <input type="text" name="contact_number" id="contact_number" placeholder="Please Input Contact Number" inputmode="numeric" pattern="\d{11}" maxlength="11" minlength="11" title="Enter exactly 11 digits" required>
+    <!-- Add Visitor Card -->
+    <div class="card form-card">
+        <h3>➕ Register New Visitor</h3>
+        <form method="POST" action="">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="full_name">Full Name</label>
+                    <input type="text" name="full_name" id="full_name" placeholder="Enter full name" required>
+                </div>
 
-        <label for="valid_id">Type of ID</label>
-        <select name="valid_id" id="valid_id" required>
-            <option value="">-- Select ID Type --</option>
-            <option>Passport</option>
-            <option>Driver's License</option>
-            <option>Voter ID</option>
-            <option>SSS/GSIS ID</option>
-            <option>PhilHealth ID</option>
-            <option>Senior Citizen ID</option>
-            <option>Student ID</option>
-            <option>Other</option>
-        </select>
+                <div class="form-group">
+                    <label for="contact_number">Contact Number</label>
+                    <input type="text" name="contact_number" id="contact_number" 
+                           placeholder="09XXXXXXXXX" inputmode="numeric" 
+                           pattern="\d{11}" maxlength="11" minlength="11" 
+                           title="Enter exactly 11 digits" required>
+                </div>
 
-        <label for="number_of_visitors">Number of Visitors</label>
-        <input type="number" name="number_of_visitors" id="number_of_visitors" min="1" placeholder="Please Input Number of Visitors" required>
+                <div class="form-group">
+                    <label for="valid_id">Type of Valid ID</label>
+                    <select name="valid_id" id="valid_id" required>
+                        <option value="">-- Select ID Type --</option>
+                        <option>Passport</option>
+                        <option>Driver's License</option>
+                        <option>Voter ID</option>
+                        <option>SSS/GSIS ID</option>
+                        <option>PhilHealth ID</option>
+                        <option>Senior Citizen ID</option>
+                        <option>Student ID</option>
+                        <option>Other</option>
+                    </select>
+                </div>
 
-        <button type="submit" name="add_visitor">Add Visitor</button>
-    </form>
+                <div class="form-group">
+                    <label for="number_of_visitors">Number of Visitors</label>
+                    <input type="number" name="number_of_visitors" id="number_of_visitors" 
+                           min="1" placeholder="Enter number" required>
+                </div>
+            </div>
 
-     <?php
-    // show flash messages (replace the old inline insert/echo block here)
-    if (isset($_GET['deleted']) && $_GET['deleted'] == '1') {
-        echo "<div id='flash-msg' style='color:red;'>Visitor record deleted.</div>";
-    }
-    if (isset($_GET['added']) && $_GET['added'] == '1') {
-        echo "<div id='flash-msg' style='color:green;'>New visitor added successfully!</div>";
-    }
-    if (!empty($add_error)) {
-        echo "<div id='flash-msg' style='color:red;'>Error adding visitor: " . htmlspecialchars($add_error) . "</div>";
-    }
-    ?>
+            <div class="form-actions">
+                <button type="submit" name="add_visitor" class="btn">Add Visitor</button>
+                <button type="reset" class="btn secondary">Clear Form</button>
+            </div>
+        </form>
+
+        <?php
+        // show flash messages
+        if (isset($_GET['deleted']) && $_GET['deleted'] == '1') {
+            echo "<div id='flash-msg' class='alert alert-success'>✅ Visitor record deleted successfully.</div>";
+        }
+        if (isset($_GET['added']) && $_GET['added'] == '1') {
+            echo "<div id='flash-msg' class='alert alert-success'>✅ New visitor added successfully!</div>";
+        }
+        if (!empty($add_error)) {
+            echo "<div id='flash-msg' class='alert alert-error'>❌ Error: " . htmlspecialchars($add_error) . "</div>";
+        }
+        ?>
+    </div>
 
     <script>
     // hide the message after 3 seconds and remove query string to avoid repeat
@@ -136,7 +168,6 @@ if (isset($_GET['delete'])) {
     document.addEventListener('DOMContentLoaded', function(){
         var cn = document.getElementById('contact_number');
         if (cn) {
-
             // remove non-digits on input (handles typing and paste) and limit to 11 digits
             cn.addEventListener('input', function(){
                 this.value = this.value.replace(/\D/g,'').slice(0,11);
@@ -155,23 +186,34 @@ if (isset($_GET['delete'])) {
     });
     </script>
 
-    <h2>Visitor List</h2> 
-
+    <!-- Visitor List Card -->
+    <div class="card" id="list">
+        <div class="card-header">
+            <h3>📋 Registered Visitors</h3>
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="🔍 Search by name, contact, or ID..." onkeyup="filterTable()">
+            </div>
+        </div>
     <?php
     // Query all visitors
-    $sql = "SELECT * FROM visitor";
+    if ($conn) {
+    $sql = "SELECT * FROM visitor ORDER BY visitor_id DESC";
     $result = $conn->query($sql);
 
-      if ($result && $result->num_rows > 0) {
-        echo "<table>";
-        echo "<tr>
-                <th>Visitor ID</th>
-                <th>Full Name</th>
-                <th>Contact Number</th>
-                <th>Valid ID</th>
-                <th>Number of Visitors</th>
-                <th>Action</th>
-              </tr>";
+    if ($result && $result->num_rows > 0) {
+        echo "<div class='table-responsive'>";
+        echo "<table class='visitor-table' id='visitorTable'>";
+        echo "<thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Full Name</th>
+                  <th>Contact Number</th>
+                  <th>Valid ID Type</th>
+                  <th>No. of Visitors</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>";
+        echo "<tbody>";
         while ($row = $result->fetch_assoc()) {
             $vid = htmlspecialchars($row['visitor_id']);
             $vname = htmlspecialchars($row['full_name']);
@@ -180,25 +222,70 @@ if (isset($_GET['delete'])) {
             $num_visitors = htmlspecialchars($row['number_of_visitors']);
             $delete_id = urlencode($row['visitor_id']);
             echo "<tr>
-                    <td>{$vid}</td>
-                    <td>{$vname}</td>
-                    <td>{$vcontact}</td>
-                    <td>{$valid}</td>
-                    <td>{$num_visitors}</td>
-                    <td><a href='visitor.php?delete={$delete_id}' onclick=\"return confirm('Are you sure you want to delete this visitor?');\">Delete</a></td>
+                    <td><span class='id-badge'>#$vid</span></td>
+                    <td><strong>$vname</strong></td>
+                    <td>$vcontact</td>
+                    <td><span class='id-type-badge'>$valid</span></td>
+                    <td><span class='visitor-count'>$num_visitors</span></td>
+                    <td>
+                      <a href='visitor.php?delete=$delete_id' class='btn-delete' 
+                         onclick=\"return confirm('Are you sure you want to delete $vname?');\">
+                         🗑️ Delete
+                      </a>
+                    </td>
                   </tr>";
         }
+        echo "</tbody>";
         echo "</table>";
+        echo "</div>";
+        
+        echo "<div class='table-footer'>";
+        echo "<p>Total: <strong>" . $result->num_rows . "</strong> visitor(s) registered</p>";
+        echo "</div>";
     } else {
-        echo "<p>No records found.</p>";
+        echo "<div class='empty-state'>";
+        echo "<div class='empty-icon'>📭</div>";
+        echo "<p>No visitors registered yet</p>";
+        echo "<p class='empty-hint'>Add your first visitor using the form above</p>";
+        echo "</div>";
     }
 
     $conn->close();
+    }
     ?>
+    </div>
+
+    <script>
+    // Real-time table search/filter
+    function filterTable() {
+        const input = document.getElementById('searchInput');
+        const filter = input.value.toUpperCase();
+        const table = document.getElementById('visitorTable');
+        const tr = table.getElementsByTagName('tr');
+
+        for (let i = 1; i < tr.length; i++) {
+            const row = tr[i];
+            let found = false;
+            const td = row.getElementsByTagName('td');
+            
+            for (let j = 0; j < td.length - 1; j++) { // exclude action column
+                if (td[j]) {
+                    const txtValue = td[j].textContent || td[j].innerText;
+                    if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                        found = true;
+                        break;
+                    }
+                }
+            }
+            
+            row.style.display = found ? '' : 'none';
+        }
+    }
+    </script>
 </div>
 
 <footer>
-    &copy; <?php echo date("Y"); ?> Hospital Visitor System
+    &copy; <?php echo date("Y"); ?> Hospital Visitor System • Visitor Management
 </footer>
 
 </body>
