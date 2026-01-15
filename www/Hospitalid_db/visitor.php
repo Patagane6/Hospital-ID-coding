@@ -36,17 +36,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_visitor']) && $co
     $number_of_visitors = intval($_POST['number_of_visitors'] ?? 0);
 
     if ($add_error === '') {
-        // Let the database assign the numeric auto-increment `visitor_id`.
-        $number_of_visitors_esc = $conn->real_escape_string((string)$number_of_visitors);
-
-        $sql = "INSERT INTO visitor (full_name, contact_number, valid_id, number_of_visitors) 
-                VALUES ('$full_name', '$contact_number', '$valid_id', '$number_of_visitors_esc')";
-        if ($conn->query($sql) === TRUE) {
-            // optionally get the new numeric ID: $new_id = $conn->insert_id;
+        // Use prepared statement for security
+        $stmt = $conn->prepare("INSERT INTO visitor (full_name, contact_number, valid_id, number_of_visitors) VALUES (?, ?, ?, ?)");
+        $stmt->bind_param("sssi", $full_name, $contact_number, $valid_id, $number_of_visitors);
+        
+        if ($stmt->execute()) {
+            $stmt->close();
             header('Location: visitor.php?added=1');
             exit;
         } else {
-            $add_error = $conn->error;
+            $add_error = $stmt->error;
+            $stmt->close();
         }
     }
 }

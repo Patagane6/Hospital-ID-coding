@@ -41,10 +41,11 @@ CREATE TABLE `patient_visit` (
 
 CREATE TABLE `visitor` (
   `visitor_id` int(11) NOT NULL AUTO_INCREMENT,
-  `full_name` varchar(40) DEFAULT NULL,
-  `contact_number` varchar(40) DEFAULT NULL,
-  `valid_id` varchar(40) NOT NULL,
-  `number_of_visitors` varchar(40) DEFAULT NULL
+  `full_name` varchar(100) NOT NULL,
+  `contact_number` varchar(15) NOT NULL,
+  `valid_id` varchar(50) NOT NULL,
+  `number_of_visitors` int(11) NOT NULL DEFAULT 1,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
