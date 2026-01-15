@@ -1,4 +1,7 @@
-<?php include('includes/database.php'); ?>
+<?php
+// include database connection using a reliable, case-sensitive path
+require_once __DIR__ . '/Includes/database.php';
+?>
 
 <?php
 
