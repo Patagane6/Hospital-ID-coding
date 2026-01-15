@@ -1,6 +1,12 @@
 <?php
-// Use a case-correct, absolute include so include works on case-sensitive filesystems
-require_once __DIR__ . '/Includes/database.php';
+// Resolve database include reliably and fail with a clear error if missing
+$dbFile = __DIR__ . DIRECTORY_SEPARATOR . 'Includes' . DIRECTORY_SEPARATOR . 'database.php';
+if (!file_exists($dbFile)) {
+    error_log('Missing database include: ' . $dbFile);
+    http_response_code(500);
+    die('Server configuration error: database connection file not found.');
+}
+require_once $dbFile;
 ?>
 
 <?php
