@@ -1,5 +1,5 @@
 <?php
-// include database connection using a reliable, case-sensitive path
+// Use a case-correct, absolute include so include works on case-sensitive filesystems
 require_once __DIR__ . '/Includes/database.php';
 ?>
 
